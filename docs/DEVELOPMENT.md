@@ -13,6 +13,7 @@ Implement one approved phase at a time. At the end of a phase:
 
 The planned feature checkpoints are:
 
+- `feat/generalized-mms-importer`
 - `feat/financial-foundation`
 - `feat/historical-profit-engine`
 - `feat/owner-dashboard-reporting`

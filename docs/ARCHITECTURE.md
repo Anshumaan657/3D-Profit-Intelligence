@@ -16,13 +16,21 @@ Workbook parser
   -> dashboard and reports
 ```
 
+## Phase 2 importer
+
+The browser transfers the selected workbook buffer to a dedicated Web Worker. The worker validates the file envelope and MMS contract, parses saved workbook values, creates canonical production and downtime records, and returns a compact review summary to the interface.
+
+The canonical model preserves the source sheet and one-based source row on every record. Exact duplicates and negative values remain available as evidence but are excluded from ordinary totals. Reported `Qty` is authoritative; `Stroke × M. Factor` is a validation comparison only.
+
+The worker retains the complete canonical import in memory for future calculation phases. Cancelling or replacing an import terminates that worker and releases its local state.
+
 ## Planned source boundaries
 
 - `src/app`: routes, layouts and route-specific presentation
 - `src/components`: reusable UI components
 - `src/features`: user workflows such as import and financial setup
 - `src/core`: framework-independent domain types and calculation engines
-- `src/workers`: workbook parsing and heavy calculation workers
+- `src/workers`: cancellable workbook parsing and future heavy calculation workers
 - `src/lib`: cross-cutting utilities and adapters
 
 ## Non-negotiable boundaries
