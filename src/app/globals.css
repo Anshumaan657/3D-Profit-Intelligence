@@ -50,3 +50,22 @@ body {
   outline: 3px solid var(--brand);
   outline-offset: 3px;
 }
+
+@media print {
+  :root {
+    --canvas: #ffffff;
+    --surface: #ffffff;
+    --ink: #112331;
+    --muted: #52616b;
+    --line: #dce4e3;
+    --brand: #0f766e;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+}

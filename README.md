@@ -6,7 +6,7 @@
 
 ## Current checkpoint
 
-Phase 1 establishes the independent repository, application shell, security boundaries, documentation, automated checks and test foundation. Workbook importing and financial calculations are intentionally deferred to later reviewed phases.
+Phase 2 adds the generalized, local-only MMS workbook importer. It validates `.xls` and `.xlsx` files, maps the required MMS sheets and columns, normalizes production and downtime evidence in a Web Worker, and produces a printable or downloadable compatibility report. Financial calculations remain deferred to their reviewed phase.
 
 ## Financial integrity rules
 
@@ -43,9 +43,12 @@ npm run dev
 
 Do not add client workbooks, normalized snapshots, generated reports, secrets or screenshots containing factory information to this repository. The relevant paths and spreadsheet extensions are excluded through `.gitignore`.
 
+The importer does not upload or modify the selected workbook. It rejects unsupported formats, unsafe sizes, mismatched file signatures, missing structural requirements and imports with more than 25% invalid core rows.
+
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Excel input guide](docs/EXCEL_INPUT_GUIDE.md)
 - [Development workflow](docs/DEVELOPMENT.md)
 - [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
 - [Decision status](docs/DECISION_STATUS.md)

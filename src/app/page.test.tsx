@@ -3,21 +3,28 @@ import { describe, expect, it } from "vitest";
 
 import Home from "./page";
 
-describe("Phase 1 application shell", () => {
-  it("identifies the product and its financial-integrity boundary", () => {
+describe("Phase 2 workbook importer", () => {
+  it("explains the local import and quantity-integrity boundaries", () => {
     render(<Home />);
 
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /turn factory activity into financial clarity/i,
+        name: /start with a workbook you can trust/i,
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/without presenting estimates as audited accounts/i),
+      screen.getByRole("heading", {
+        level: 2,
+        name: /bring your mms evidence into focus/i,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/no client workbook is bundled/i),
+      screen.getByText(/reported qty is authoritative/i),
     ).toBeInTheDocument();
+    expect(screen.getByLabelText(/choose workbook/i)).toHaveAttribute(
+      "accept",
+      expect.stringContaining(".xlsx"),
+    );
   });
 });
