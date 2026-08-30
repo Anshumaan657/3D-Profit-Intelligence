@@ -1,8 +1,8 @@
 # Phase 4 — Versioned Financial Policy
 
-Phase 4 has five separately reviewed subphases. Implement one, verify it, let the project owner review/commit/push and merge its pull request on GitHub, then wait for confirmation before starting the next. Do not push directly to `main`. This subdivision does not change the remaining major project phases.
+Phase 4 has five separately reviewed subphases. The owner initially required a merge checkpoint between each. After merging 4.2, the owner authorized completing 4.3–4.5 continuously with three separate local commits and stacked branches. Pushes and merges remain owner-controlled through GitHub; do not push directly to `main`. This subdivision does not change the remaining major project phases.
 
-Current checkpoint: 4.1 merged at `cbf47ec`; 4.2 implemented for review on `feat/policy-formulas`. See `PHASE_4_2_REVIEW.md` for its verification and commit/PR instructions. The 4.1 commands below are retained as the historical workflow, not the current branch instructions.
+Current checkpoint: 4.2 merged at `9945b32`; 4.3–4.5 implemented and locally committed on stacked branches. See `PHASE_4_STACKED_PRS.md` for the current review/push/merge instructions. The 4.1 commands below are retained as historical workflow, not the current branch instructions.
 
 | Subphase | Scope | Acceptance checkpoint |
 | --- | --- | --- |

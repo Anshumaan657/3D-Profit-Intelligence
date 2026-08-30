@@ -8,7 +8,7 @@
 
 Phase 3 adds a guided Financial Setup Wizard on top of the verified MMS importer. It collects product prices/material costs, machine and labour rates, overheads, quality/rework costs, scrap recovery, factory calendar rules, unit conversions and aliases. Effective-date and input checks are shared by the UI and Excel/JSON imports. Draft storage is local, optional and consent-based. Financial calculations remain deferred to their reviewed phase.
 
-Phases 3 and 4.1 are merged. Phase 4.2 adds 22 versioned formula definitions, exact arithmetic, guarded policy execution and worked-case tests for review. The dashboard remains unchanged; historical financial engines are not yet integrated. Phase 4 is split into five separately reviewed and merged subphases; see the plan below.
+Phase 4.2 is merged. Phases 4.3–4.5 add immutable financial releases, approval history, per-result confidence evaluation and a separate **Policies & history** workspace with validated JSON backup/restore and opt-in local persistence. These three checkpoints are committed locally on stacked review branches; pushing and GitHub merging remain owner-controlled. Historical financial engines and the money dashboard are not yet integrated.
 
 ## Financial integrity rules
 
@@ -57,6 +57,10 @@ The importer does not upload or modify the selected workbook. It rejects unsuppo
 - [Phase 4.1 verification and review](docs/PHASE_4_1_REVIEW.md)
 - [Formula definitions and execution boundaries](docs/FORMULA_REFERENCE.md)
 - [Phase 4.2 verification and GitHub PR workflow](docs/PHASE_4_2_REVIEW.md)
+- [Immutable releases and approval boundaries](docs/PHASE_4_3_REVIEW.md)
+- [Confidence and policy workspace](docs/PHASE_4_4_REVIEW.md)
+- [Archive portability and final verification](docs/PHASE_4_5_REVIEW.md)
+- [Three-PR GitHub handoff](docs/PHASE_4_STACKED_PRS.md)
 - [Development workflow](docs/DEVELOPMENT.md)
 - [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
 - [Decision status](docs/DECISION_STATUS.md)

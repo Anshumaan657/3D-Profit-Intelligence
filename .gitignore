@@ -57,3 +57,4 @@ next-env.d.ts
 
 # local application state
 /.local-data/
+3D-Policy-Archive*.json

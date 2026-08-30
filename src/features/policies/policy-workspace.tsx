@@ -6,8 +6,8 @@ import type { FinancialMaster } from "@/core/financial/schema";
 import { validateMaster } from "@/core/financial/validation";
 import { createProvisionalFormulaPolicy } from "@/core/policy/evaluate";
 import { listFormulaDefinitions } from "@/core/policy/formulas";
-import { approvePolicy, policyCoverage, policyKey, publishRelease, revisePolicyGovernance, type FinancialRelease } from "@/core/policy/releases";
-import type { FinancialPolicy } from "@/core/policy/schema";
+import { approvePolicy, canonicalJson, policyCoverage, policyKey, publishRelease, revisePolicyGovernance, type FinancialRelease } from "@/core/policy/releases";
+import { parsePolicy, type FinancialPolicy } from "@/core/policy/schema";
 
 const definitions = listFormulaDefinitions();
 type Form = { formula: string; from: string; through: string; cap: string; high: string; medium: string; low: string };
@@ -50,8 +50,11 @@ export function PolicyWorkspace({ master, history, onHistory, portability }: { m
           { id: "provisional-policy", condition: "provisional_policy", inputKey: null, effect: { kind: "cap", maximumScore: Number(form.cap) }, reason: "Provisional policy evidence limits confidence." },
           ...definition.inputs.flatMap(input => (["estimated_input", "provisional_input"] as const).map(condition => ({ id: `${input.key}-${condition.replaceAll("_", "-")}`, condition, inputKey: input.key, effect: { kind: "cap" as const, maximumScore: Number(form.cap) }, reason: `${input.key} is supported by an assumption rather than confirmed evidence.` }))),
         ] };
+        if (selected) {
+          confidence.rules = selected.confidence.rules.map(rule => ({ ...rule, effect: rule.effect.kind === "cap" && ["provisional_policy", "estimated_input", "provisional_input"].includes(rule.condition) ? { kind: "cap", maximumScore: Number(form.cap) } : { ...rule.effect } }));
+        }
         const dates = { from: form.from, through: form.through || null };
-        policy = selected ? revisePolicyGovernance(selected, dates, confidence, { actor, at, reason }) : createProvisionalFormulaPolicy(form.formula, "1.0.0", { createdAt: at, createdBy: actor, reason, effectiveDates: dates, confidence });
+        policy = selected ? (selected.status === "provisional" && canonicalJson(selected.effectiveDates) === canonicalJson(dates) && canonicalJson(selected.confidence) === canonicalJson(confidence) ? parsePolicy(selected) : revisePolicyGovernance(selected, dates, confidence, { actor, at, reason })) : createProvisionalFormulaPolicy(form.formula, "1.0.0", { createdAt: at, createdBy: actor, reason, effectiveDates: dates, confidence });
       }
       const policies = [...latest?.policies ?? []].filter(item => policyKey(item) !== editingKey);
       const next = await publishRelease(history, master, [...policies, policy], { actor, at, reason });
@@ -82,7 +85,7 @@ export function PolicyWorkspace({ master, history, onHistory, portability }: { m
           <label className="setup-label">Policy effective through<input type="date" className="setup-input" value={form.through} onInput={event => field("through", event.currentTarget.value)} /></label>
           <label className="setup-label">Assumption confidence cap<input className="setup-input" inputMode="numeric" value={form.cap} onChange={event => field("cap", event.target.value)} /></label>
           {(["high", "medium", "low"] as const).map(key => <label key={key} className="setup-label">{key[0].toUpperCase() + key.slice(1)} confidence starts at<input className="setup-input" inputMode="numeric" value={form[key]} onChange={event => field(key, event.target.value)} /></label>)}
-          <p className="setup-help sm:col-span-2">Evidence score, not probability. High &gt; medium &gt; low &gt; 0; cap 0–99. Values below low are “Very low”. These are explicit policy choices, not overrides of a result score.</p>
+          <p className="setup-help sm:col-span-2">Evidence score, not probability. High &gt; medium &gt; low &gt; 0; cap 0–99. Values below low are “Very low”. These are explicit policy choices, not overrides of a result score. Revisions retain hard-stop and quality rules; this cap updates existing policy/input assumption caps.</p>
           <label className="setup-label">Recorded by<input className="setup-input" value={actor} onChange={event => setActor(event.target.value)} maxLength={200} /></label>
           <label className="setup-label">Change / approval reason<input className="setup-input" value={reason} onChange={event => setReason(event.target.value)} maxLength={2000} /></label>
           <button className="setup-button sm:col-span-2" onClick={() => void save(false)}>{busy ? "Validating release…" : "Save provisional release"}</button>
