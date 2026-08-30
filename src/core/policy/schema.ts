@@ -76,6 +76,7 @@ export const policySchema = z.object({
   confidence: z.object({
     scoreMeaning: z.literal("evidence_not_probability"),
     aggregation: z.literal("weakest_component_cap"),
+    bands: z.object({ high: score, medium: score, low: score }).strict().refine(bands => bands.high > bands.medium && bands.medium > bands.low && bands.low > 0, "Confidence bands must satisfy high > medium > low > 0.").optional(),
     rules: z.array(confidenceRuleSchema).min(1).max(100),
   }).strict(),
   supersedesVersion: version.nullable(),

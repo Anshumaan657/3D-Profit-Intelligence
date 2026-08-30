@@ -11,3 +11,5 @@ Pinned calculations retain exact source fingerprint, release ID/hash, policy int
 Tests cover snapshot isolation, approval succession, integrity failure, broken lineage, overlap/date gaps, retroactive releases and old-run reproduction. No UI or durable persistence is added in this checkpoint; those follow in 4.4–4.5.
 
 User authorized local commits for 4.3–4.5 in one run, with separate stacked branches. Pushes, PR creation and merges remain user-owned.
+
+Checkpoint verification on Node 22.19.0: lint/typecheck/build passed; 245 tests passed, one optional real-workbook test skipped.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { COMMON_FIELDS, emptyMaster, fieldsFor, newRow, revise, SECTION_KEYS, SECTIONS, type FinancialMaster, type SectionKey } from "@/core/financial/schema";
 import { calendarDay, keyOf, validateMaster, type SetupIssue } from "@/core/financial/validation";
 import type { MmsImportSummary } from "@/core/mms";
@@ -12,8 +12,9 @@ type Step = "factory" | SectionKey | "review";
 const STEPS: Step[] = ["factory", ...SECTION_KEYS, "review"];
 const title = (step: Step) => step === "factory" ? "Factory & dates" : step === "review" ? "Review setup" : SECTIONS[step].title;
 
-export function FinancialSetupWizard({ source }: { source: MmsImportSummary | null }) {
+export function FinancialSetupWizard({ source, onMasterChange }: { source: MmsImportSummary | null; onMasterChange?: (master: FinancialMaster) => void }) {
   const [master, setMaster] = useState<FinancialMaster>(emptyMaster);
+  useEffect(() => { onMasterChange?.(master); }, [master, onMasterChange]);
   const [step, setStep] = useState<Step>("factory");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

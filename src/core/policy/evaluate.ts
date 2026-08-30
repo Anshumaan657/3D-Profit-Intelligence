@@ -2,6 +2,7 @@ import { z } from "zod";
 import { exact, type Exact, type ExactValue } from "./exact";
 import { findFormulaDefinition, runBoundFormula, type FormulaDefinition } from "./formulas";
 import { parsePolicy, type FinancialPolicy } from "./schema";
+import { qualityEvidenceSchema } from "./quality-evidence";
 
 export type PolicyGovernance = Pick<FinancialPolicy, "effectiveDates" | "confidence"> & { createdAt: string; createdBy: string; reason: string };
 const policyInputs = (definition: FormulaDefinition): FinancialPolicy["inputs"] => definition.inputs.map(input => ({
@@ -90,7 +91,7 @@ export function expectedInputCategory(input: FormulaDefinition["inputs"][number]
 }
 
 /** Pure, strict execution boundary. Callers must resolve provenance and dates before calling. */
-export function evaluatePolicy(policyValue: unknown, requestValue: unknown): FormulaResult {
+export function evaluatePolicy(policyValue: unknown, requestValue: unknown, qualityEvidence?: unknown): FormulaResult {
   const result: FormulaResult = { status: "unavailable", exactValue: null, unit: null, category: null, policy: null, businessDate: null, scopeId: null, inputs: {}, expression: null, explanation: null, specification: null, issues: [], warnings: [], confidence: "not_evaluated" };
   const issue = (code: string, message: string, input?: string) => result.issues.push({ code, message, ...(input ? { input } : {}) });
   let policy: FinancialPolicy;
@@ -137,9 +138,11 @@ export function evaluatePolicy(policyValue: unknown, requestValue: unknown): For
     } catch { issue("invalid_amount", "Input is not a supported exact decimal/fraction or exceeds precision limits.", input.key); }
   }
   // Honour explicit hard-unavailability rules now; numerical scoring belongs to 4.4.
+  const assessments = qualityEvidenceSchema.safeParse(qualityEvidence);
   for (const rule of policy.confidence.rules) {
     if (rule.effect.kind === "unavailable" && ["source_quality", "mapping_quality", "formula_reliability"].includes(rule.condition)) {
-      issue("unevaluated_hard_rule", "This policy requires a quality/reliability availability check that is not yet implemented; execution is blocked.");
+      if (!assessments.success) issue("unevaluated_hard_rule", "This policy requires evidence-backed quality checks; execution is blocked until they are supplied.");
+      else if (assessments.data[rule.condition as keyof typeof assessments.data].score < 100) issue("policy_unavailable", rule.reason);
     }
     const evidence = rule.inputKey ? request.inputs[rule.inputKey] : undefined;
     const triggered = rule.condition === "provisional_policy" && policy.status === "provisional" ||
