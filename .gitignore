@@ -41,6 +41,8 @@ yarn-error.log*
 /uploads/
 /private-data/
 /normalized-snapshots/
+/financial-drafts/
+3D-Financial-Master_*.json
 
 # generated outputs
 /generated-reports/

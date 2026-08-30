@@ -23,7 +23,22 @@ The complete project decision document supplied on 23 August 2026 is the approve
 - Cancellable Web Worker import with progress, JSON and print reports
 - Synthetic contract tests plus read-only verification against the supplied MMS sample
 
-Phase 2 changes remain uncommitted and unpushed until project-owner review.
+Phase 2 was committed as `de01cba` and integrated into `main` at `7e6b87d`.
+
+## Implemented for Phase 3 review
+
+- One-section-at-a-time financial setup with factory/date selection
+- Eight financial-master sections covering all requested inputs
+- Blank/zero/invalid/estimated/provisional/confirmed distinctions
+- Required-input, effective-date overlap/coverage, reference and unit-conversion checks
+- Separate consolidated versus itemized machine-rate modes
+- Local worker-based Excel/JSON import with preview before replacement
+- Excel template, Excel export and lossless JSON draft backup
+- Explicit unencrypted local-storage consent, 30-day default expiry, configurable 1–90-day retention, restore and deletion
+- MMS item catalog integration without editing production records or inventing financial rates
+- Draft revision increments and confirmation reset after rate edits
+
+Phase 3 remains uncommitted for project-owner review. It does not implement financial calculations or immutable approved policy history (Phase 4). Local named confirmation is self-declared, not an authenticated maker-checker workflow.
 
 ## Provisional financial policies
 

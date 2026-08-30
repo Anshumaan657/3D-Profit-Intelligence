@@ -10,7 +10,7 @@ describe("Phase 2 workbook importer", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /start with a workbook you can trust/i,
+        name: /start with your mms workbook/i,
       }),
     ).toBeInTheDocument();
     expect(

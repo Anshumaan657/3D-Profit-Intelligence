@@ -26,6 +26,19 @@ The worker retains the complete canonical import in memory for future calculatio
 
 ## Planned source boundaries
 
+### Phase 3 implementation
+
+- `src/features/workflow/analysis-workspace.tsx` keeps Import and Financial Setup mounted, showing only the active step. Switching steps preserves the in-memory draft and live MMS worker.
+- `src/core/financial/schema.ts` defines schema version 1 and the eight section contracts. The same field definitions drive forms, validation and Excel headers.
+- `src/core/financial/validation.ts` checks business inputs independently of React. Missing inputs, invalid/conflicting inputs and warnings remain distinct.
+- `src/core/financial/portability.ts` validates JSON shape and Excel structure, uses saved formula values only, and escapes formula-like exported text. Financial imports are capped at 10 MB / 10,000 rows.
+- `src/workers/financial-master.worker.ts` parses imported financial masters off the UI thread. The UI previews a replacement before applying it.
+- `src/core/financial/draft-storage.ts` owns the single namespaced local-storage entry. Consent is required for writes; expiry is anchored to consent time, not extended silently on every save.
+- The wizard keeps raw form input strings so empty, zero and invalid drafts can round-trip. Numeric Excel values are typed when valid; JSON preserves exact draft text. Later financial engines must validate and resolve inputs before using them.
+- The master carries a draft ID/revision. Immutable approved master/policy snapshots and downstream calculation fingerprints belong to the next phases.
+
+No React component calculates revenue or profit. The setup review is not an approval of financial accuracy.
+
 - `src/app`: routes, layouts and route-specific presentation
 - `src/components`: reusable UI components
 - `src/features`: user workflows such as import and financial setup
