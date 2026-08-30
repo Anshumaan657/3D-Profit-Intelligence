@@ -73,6 +73,14 @@ function canonical(value: unknown): string {
   return JSON.stringify(value);
 }
 
+export function assertFormulaBinding(policy: FinancialPolicy): void {
+  const definition = findFormulaDefinition(policy.policyId, policy.formulaVersion);
+  if (!definition || policy.formulaName !== definition.formulaName || policy.category !== definition.category ||
+    canonical(policy.inputs) !== canonical(policyInputs(definition)) || canonical(policy.calculation) !== canonical(definition.calculation)) {
+    throw new Error("Policy must match an implemented formula version.");
+  }
+}
+
 export function expectedInputCategory(input: FormulaDefinition["inputs"][number]): FormulaEvidence["category"] {
   if (input.source === "financial_master") return "configuration";
   if (input.source === "accounting") return "actual_accounting";
