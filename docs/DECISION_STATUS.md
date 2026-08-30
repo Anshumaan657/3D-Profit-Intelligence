@@ -48,7 +48,19 @@ Phase 3 was committed as `cb367f1` and integrated into `main` at `208e2a6` throu
 - Domain regression tests, including invalid records, approval evidence, inert expressions and mutation attempts
 - Five sequential review/merge checkpoints documented in `PHASE_4_PLAN.md`
 
-Phase 4.1 is uncommitted for owner review. No seeded financial policies are confirmed. Formula execution, cross-version date resolution, published snapshot history, confidence evaluation and the policy UI remain assigned to 4.2–4.5. Registry immutability is in-memory protection, not a durable audit trail.
+Phase 4.1 was committed as `b63639d` and merged into `main` at `cbf47ec`. Registry immutability is in-memory protection, not a durable audit trail.
+
+## Implemented for Phase 4.2 review
+
+- 22 versioned, specification-linked scalar formula definitions with hand-worked tests
+- Exact rational arithmetic for decimal strings and JSON-safe intermediate results; no intermediate rounding
+- Explicit governance required when creating provisional formula policies; no active factory policies seeded
+- Strict policy-to-implementation binding and single-policy business-date bounds
+- Input units, source/category, scope, completeness, confirmation and missing-data checks
+- Separate consolidated/itemized costs, quality attribution, operational profit, opportunity and scenarios
+- Provisional-policy opt-in, traceable input/result evidence and unavailable results for invalid calculations
+
+Phase 4.2 remains uncommitted for review. All new financial formulas require business review; passing tests is not 3D approval. The catalog does not establish factory-wide cost completeness or deduplication. Date-based policy selection, snapshots, confidence scoring and UI remain in 4.3–4.5; actual historical financial aggregation belongs to subsequent engine phases. See `FORMULA_REFERENCE.md` for explicit implemented/deferred boundaries.
 
 ## Provisional financial policies
 

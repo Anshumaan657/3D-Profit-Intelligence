@@ -46,6 +46,14 @@ No React component calculates revenue or profit. The setup review is not an appr
 - The catalog currently has no persistence or UI wiring. Cross-version validity, executable formula binding, financial-master snapshots and confidence evaluation follow the review gates in `docs/PHASE_4_PLAN.md`.
 - Self-declared approval evidence is structurally validated, not authenticated. No default financial policy is promoted to confirmed.
 
+### Phase 4.2 implementation
+
+- `src/core/policy/formulas.ts` holds 22 versioned definitions and fixed-code scalar implementations; callers cannot execute arbitrary formula text.
+- `src/core/policy/exact.ts` carries exact fractions between steps and formats only at the final display boundary. Public values use numerator/denominator strings so JSON serialization does not lose precision.
+- `src/core/policy/evaluate.ts` binds policy metadata to known implementations and validates explicit dates, scope, unit/source/category evidence and mandatory inputs. Results include explanations, input references, warnings and unavailable reasons.
+- Formula policies require caller-provided governance and start provisional. No active dates, confidence scores, financial inputs or approvers are supplied by default.
+- This is a standalone core API, not dashboard integration or a full ledger. Future engines must resolve aliases/conversions, select source quantities and master versions, prove cost coverage, allocate shared costs and prevent cross-record double counting. See `docs/FORMULA_REFERENCE.md`.
+
 - `src/app`: routes, layouts and route-specific presentation
 - `src/components`: reusable UI components
 - `src/features`: user workflows such as import and financial setup
