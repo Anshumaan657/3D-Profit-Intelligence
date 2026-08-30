@@ -38,7 +38,17 @@ Phase 2 was committed as `de01cba` and integrated into `main` at `7e6b87d`.
 - MMS item catalog integration without editing production records or inventing financial rates
 - Draft revision increments and confirmation reset after rate edits
 
-Phase 3 remains uncommitted for project-owner review. It does not implement financial calculations or immutable approved policy history (Phase 4). Local named confirmation is self-declared, not an authenticated maker-checker workflow.
+Phase 3 was committed as `cb367f1` and integrated into `main` at `208e2a6` through PR #2. It does not implement financial calculations or immutable approved policy history (Phase 4). Local named confirmation is self-declared, not an authenticated maker-checker workflow.
+
+## Implemented for Phase 4.1 review
+
+- Strict policy schema covering formula identity/version, inputs/calculation, status, effective dates, approval evidence, confidence rules and history
+- Missing-mandatory-input and approval/history consistency checks
+- Detached, recursively frozen registry records with exact-version lookup and duplicate rejection
+- Domain regression tests, including invalid records, approval evidence, inert expressions and mutation attempts
+- Five sequential review/merge checkpoints documented in `PHASE_4_PLAN.md`
+
+Phase 4.1 is uncommitted for owner review. No seeded financial policies are confirmed. Formula execution, cross-version date resolution, published snapshot history, confidence evaluation and the policy UI remain assigned to 4.2–4.5. Registry immutability is in-memory protection, not a durable audit trail.
 
 ## Provisional financial policies
 

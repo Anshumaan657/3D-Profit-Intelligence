@@ -39,6 +39,13 @@ The worker retains the complete canonical import in memory for future calculatio
 
 No React component calculates revenue or profit. The setup review is not an approval of financial accuracy.
 
+### Phase 4.1 implementation
+
+- `src/core/policy/schema.ts` defines a strict serializable policy contract, separate from financial-master drafts. Expressions are descriptive text, never evaluated code.
+- `src/core/policy/registry.ts` constructs a detached, deeply read-only catalog with exact policy-ID/version lookup. Unknown versions remain unavailable; duplicate references are rejected.
+- The catalog currently has no persistence or UI wiring. Cross-version validity, executable formula binding, financial-master snapshots and confidence evaluation follow the review gates in `docs/PHASE_4_PLAN.md`.
+- Self-declared approval evidence is structurally validated, not authenticated. No default financial policy is promoted to confirmed.
+
 - `src/app`: routes, layouts and route-specific presentation
 - `src/components`: reusable UI components
 - `src/features`: user workflows such as import and financial setup
