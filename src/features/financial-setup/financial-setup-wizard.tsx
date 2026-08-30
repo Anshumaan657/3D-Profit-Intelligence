@@ -12,8 +12,8 @@ type Step = "factory" | SectionKey | "review";
 const STEPS: Step[] = ["factory", ...SECTION_KEYS, "review"];
 const title = (step: Step) => step === "factory" ? "Factory & dates" : step === "review" ? "Review setup" : SECTIONS[step].title;
 
-export function FinancialSetupWizard({ source, onMasterChange }: { source: MmsImportSummary | null; onMasterChange?: (master: FinancialMaster) => void }) {
-  const [master, setMaster] = useState<FinancialMaster>(emptyMaster);
+export function FinancialSetupWizard({ source, onMasterChange, initialMaster }: { source: MmsImportSummary | null; onMasterChange?: (master: FinancialMaster) => void; initialMaster?: FinancialMaster }) {
+  const [master, setMaster] = useState<FinancialMaster>(() => initialMaster ?? emptyMaster());
   useEffect(() => { onMasterChange?.(master); }, [master, onMasterChange]);
   const [step, setStep] = useState<Step>("factory");
   const [selectedId, setSelectedId] = useState<string | null>(null);

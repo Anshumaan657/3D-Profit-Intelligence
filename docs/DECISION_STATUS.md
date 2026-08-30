@@ -60,7 +60,19 @@ Phase 4.1 was committed as `b63639d` and merged into `main` at `cbf47ec`. Regist
 - Separate consolidated/itemized costs, quality attribution, operational profit, opportunity and scenarios
 - Provisional-policy opt-in, traceable input/result evidence and unavailable results for invalid calculations
 
-Phase 4.2 remains uncommitted for review. All new financial formulas require business review; passing tests is not 3D approval. The catalog does not establish factory-wide cost completeness or deduplication. Date-based policy selection, snapshots, confidence scoring and UI remain in 4.3–4.5; actual historical financial aggregation belongs to subsequent engine phases. See `FORMULA_REFERENCE.md` for explicit implemented/deferred boundaries.
+Phase 4.2 was committed as `99aadbc` and merged into `main` at `9945b32`. All new financial formulas require business review; passing tests is not 3D approval. The catalog does not establish factory-wide cost completeness or deduplication. Actual historical financial aggregation belongs to subsequent engine phases.
+
+## Implemented for Phase 4.3–4.5 review
+
+- Immutable, parent-linked policy/financial-master release snapshots; date overlap/gap checks and explicit version selection
+- Fresh approval requirements for changed confirmed policies and draft demotion for changed confirmed rates
+- Pinned exact calculations, original source fingerprints and reproducible per-result confidence evidence
+- Weakest-component confidence scoring, versioned thresholds and explicit missing-evidence states
+- Secondary policy interface connected to Financial Setup, with approval evidence and historical release review
+- Worker-based validated JSON archive import, preview and non-destructive compatible-history merge
+- Separate opt-in unencrypted archive storage, fixed retention/expiry, cancellation and deletion controls
+
+The owner authorized three local commits on stacked branches, not pushing or merging. See `PHASE_4_STACKED_PRS.md`. Local approval remains self-declared; fingerprints are integrity checks, not authenticated audit signatures. Core confidence assessments still depend on later data-quality/matching engines, and no historical profit dashboard or forecast is being claimed.
 
 ## Provisional financial policies
 

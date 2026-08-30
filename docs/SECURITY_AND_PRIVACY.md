@@ -34,3 +34,11 @@ Telemetry and error reporting remain disabled unless a later opt-in design is ap
 - JSON and Excel imports validate schema/version, size and structure before replacement. Unknown fields/sheets fail closed; invalid business entries may remain as explicitly flagged drafts.
 - Exported spreadsheet text is escaped against formula injection. Financial formulas are not executed; cached values are reported, and missing/error cached results reject the financial import.
 - Named confirmation in the local MVP is not authentication or a digital signature. Formal approval/audit controls remain later work.
+
+## Policy release archives (Phase 4.5)
+
+Policy archives contain complete financial-master snapshots, approval notes and possibly pinned request/result evidence. They are sensitive even though raw MMS workbook buffers are excluded. JSON downloads should be stored securely.
+
+Archive persistence uses its own `3d-profit-intelligence:policy-archive:v1` key and separate explicit consent. The saved copy is unencrypted, expires after 30 days by default (1–90 configurable), and can be deleted without deleting other draft keys. Consent withdrawal aborts pending saves. Reads and active-session expiry checks remove expired copies; browser closure itself cannot execute scheduled deletion. Storage failures preserve in-memory data and are reported.
+
+Archive import is limited to 10 MB; local saved payloads to 4 MB. Validation checks schema, lineage, overlaps, known formula bindings, hashes and pinned-result replay. Conflicting histories are rejected rather than overwritten. SHA-256 is an integrity check, not authenticated evidence: someone controlling the whole archive can rewrite it and recompute hashes. Approval identities remain self-declared until the later authenticated multi-user workflow.

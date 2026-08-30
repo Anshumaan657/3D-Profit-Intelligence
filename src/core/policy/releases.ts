@@ -3,6 +3,8 @@ import { parseMaster, type FinancialMaster } from "../financial/schema";
 import { validateMaster } from "../financial/validation";
 import { assertFormulaBinding, evaluatePolicy, type FormulaRequest, type FormulaResult } from "./evaluate";
 import { parsePolicy, type DeepReadonly, type FinancialPolicy } from "./schema";
+import { evaluateWithConfidence, type ConfidenceResult } from "./confidence";
+import { qualityEvidenceSchema, type QualityEvidence } from "./quality-evidence";
 
 export function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
@@ -30,6 +32,20 @@ const releaseSchema = z.object({
 type ReleaseData = Omit<z.infer<typeof releaseSchema>, "master" | "policies"> & { master: FinancialMaster; policies: FinancialPolicy[] };
 export type FinancialRelease = DeepReadonly<ReleaseData>;
 export const policyKey = (policy: Pick<FinancialPolicy, "policyId" | "formulaVersion" | "effectiveDates">) => `${policy.policyId}@${policy.formulaVersion}:${policy.effectiveDates.from}`;
+
+function validateTransition(previous: FinancialRelease, master: FinancialRelease["master"], policies: FinancialRelease["policies"]): void {
+  for (const policy of policies) {
+    const unchanged = previous.policies.some(old => canonicalJson(old) === canonicalJson(policy));
+    if (!unchanged && policy.approval.state === "recorded" && Date.parse(policy.approval.approvedAt) <= Date.parse(previous.metadata.at)) throw new Error("Changed confirmed policies require fresh approval; inherited approval cannot authorize edits.");
+  }
+  for (const section of Object.keys(master.sections) as (keyof FinancialMaster["sections"])[]) {
+    for (const row of master.sections[section]) {
+      const old = previous.master.sections[section].find(item => item.id === row.id);
+      const economic = (values: Record<string, string>) => Object.fromEntries(Object.entries(values).filter(([key]) => !["status", "approvedBy", "note"].includes(key)));
+      if (old?.values.status === "confirmed" && row.values.status === "confirmed" && canonicalJson(economic(old.values)) !== canonicalJson(economic(row.values))) throw new Error("Changed confirmed master entries must return to draft before publishing.");
+    }
+  }
+}
 
 function validateSchedule(policies: FinancialPolicy[]): void {
   const groups = new Map<string, FinancialPolicy[]>();
@@ -59,6 +75,7 @@ export async function verifyRelease(value: unknown): Promise<FinancialRelease> {
 
 export async function verifyReleaseHistory(values: readonly unknown[]): Promise<readonly FinancialRelease[]> {
   if (values.length > 100) throw new Error("At most 100 releases per local archive.");
+  if (new TextEncoder().encode(JSON.stringify(values)).byteLength > 10 * 1024 * 1024) throw new Error("Release history exceeds the 10 MB safety limit.");
   const releases: FinancialRelease[] = [];
   for (const value of values) {
     const release = await verifyRelease(value);
@@ -66,6 +83,7 @@ export async function verifyReleaseHistory(values: readonly unknown[]): Promise<
     if (release.revision !== releases.length + 1 || release.parentId !== (previous?.id ?? null) || release.parentHash !== (previous?.hash ?? null)) throw new Error("Broken release lineage or missing parent.");
     if (releases.some(item => item.id === release.id)) throw new Error("Duplicate release ID.");
     if (previous && (previous.master.id !== release.master.id || previous.master.factory !== release.master.factory || Date.parse(release.metadata.at) < Date.parse(previous.metadata.at))) throw new Error("Release factory identity or chronology changed.");
+    if (previous) validateTransition(previous, release.master, release.policies);
     releases.push(release);
   }
   return immutable(releases);
@@ -77,19 +95,6 @@ export async function publishRelease(history: readonly FinancialRelease[], maste
   const policies = policyValues.map(parsePolicy);
   const meta = metadata.parse(event);
   const previous = existing.at(-1);
-  if (previous) {
-    for (const policy of policies) {
-      const unchanged = previous.policies.some(old => canonicalJson(old) === canonicalJson(policy));
-      if (!unchanged && policy.approval.state === "recorded" && Date.parse(policy.approval.approvedAt) <= Date.parse(previous.metadata.at)) throw new Error("Changed confirmed policies require fresh approval; inherited approval cannot authorize edits.");
-    }
-    for (const section of Object.keys(master.sections) as (keyof FinancialMaster["sections"])[]) {
-      for (const row of master.sections[section]) {
-        const old = previous.master.sections[section].find(item => item.id === row.id);
-        const economic = (values: Record<string, string>) => Object.fromEntries(Object.entries(values).filter(([key]) => !["status", "approvedBy", "note"].includes(key)));
-        if (old?.values.status === "confirmed" && row.values.status === "confirmed" && canonicalJson(economic(old.values)) !== canonicalJson(economic(row.values))) throw new Error("Changed confirmed master entries must return to draft before publishing.");
-      }
-    }
-  }
   const payload = { schemaVersion: 1 as const, id: crypto.randomUUID(), revision: existing.length + 1, parentId: previous?.id ?? null, parentHash: previous?.hash ?? null, metadata: meta, master, policies };
   return verifyReleaseHistory([...existing, { ...payload, hash: await fingerprint(payload) }]);
 }
@@ -138,20 +143,22 @@ export function policyCoverage(release: FinancialRelease, policyId: string, from
   return gaps;
 }
 
-export type PinnedRun = DeepReadonly<{ schemaVersion: 1; id: string; releaseId: string; releaseHash: string; sourceFingerprint: string; policyKey: string; request: FormulaRequest; result: FormulaResult; hash: string }>;
-export async function pinCalculation(releaseValue: FinancialRelease, policyId: string, request: FormulaRequest, sourceFingerprint: string): Promise<PinnedRun> {
+export type PinnedRun = DeepReadonly<{ schemaVersion: 1; id: string; releaseId: string; releaseHash: string; sourceFingerprint: string; policyKey: string; request: FormulaRequest; result: FormulaResult; qualityEvidence?: QualityEvidence; confidence?: ConfidenceResult; hash: string }>;
+export async function pinCalculation(releaseValue: FinancialRelease, policyId: string, request: FormulaRequest, sourceFingerprint: string, qualityValue?: QualityEvidence): Promise<PinnedRun> {
   const release = await verifyRelease(releaseValue);
   digest.parse(sourceFingerprint);
   const selected = resolvePolicy(release, policyId, request.businessDate, request.allowProvisional);
   if (selected.status !== "selected") throw new Error(selected.message);
-  const result = evaluatePolicy(selected.policy, request);
+  const qualityEvidence = qualityValue === undefined ? undefined : qualityEvidenceSchema.parse(qualityValue);
+  const evaluated = qualityEvidence ? evaluateWithConfidence(selected.policy, request, qualityEvidence) : undefined;
+  const result = evaluated?.calculation ?? evaluatePolicy(selected.policy, request);
   if (result.issues.some(issue => issue.code === "invalid_request")) throw new Error("Cannot pin malformed input evidence.");
-  const payload = { schemaVersion: 1 as const, id: crypto.randomUUID(), releaseId: release.id, releaseHash: release.hash, sourceFingerprint, policyKey: selected.key, request: structuredClone(request), result };
+  const payload = { schemaVersion: 1 as const, id: crypto.randomUUID(), releaseId: release.id, releaseHash: release.hash, sourceFingerprint, policyKey: selected.key, request: structuredClone(request), result, ...(qualityEvidence ? { qualityEvidence, confidence: evaluated!.confidence } : {}) };
   return immutable({ ...payload, hash: await fingerprint(payload) });
 }
 
 export async function verifyPinnedRun(value: unknown, history: readonly FinancialRelease[]): Promise<PinnedRun> {
-  const boundary = z.object({ schemaVersion: z.literal(1), id: z.string().uuid(), releaseId: z.string().uuid(), releaseHash: digest, sourceFingerprint: digest, policyKey: name, request: z.unknown(), result: z.unknown(), hash: digest }).strict();
+  const boundary = z.object({ schemaVersion: z.literal(1), id: z.string().uuid(), releaseId: z.string().uuid(), releaseHash: digest, sourceFingerprint: digest, policyKey: name, request: z.unknown(), result: z.unknown(), qualityEvidence: qualityEvidenceSchema.optional(), confidence: z.unknown().optional(), hash: digest }).strict();
   const parsed = boundary.parse(value);
   const { hash, ...payload } = parsed;
   if (await fingerprint(payload) !== hash) throw new Error("Pinned-run integrity check failed.");
@@ -160,7 +167,9 @@ export async function verifyPinnedRun(value: unknown, history: readonly Financia
   await verifyRelease(release);
   const policy = release.policies.find(policy => policyKey(policy) === parsed.policyKey);
   if (!policy) throw new Error("Pinned policy is missing.");
-  const reproduced = evaluatePolicy(policy, parsed.request);
+  const scored = parsed.qualityEvidence ? evaluateWithConfidence(policy, parsed.request, parsed.qualityEvidence) : undefined;
+  if ((parsed.qualityEvidence === undefined) !== (parsed.confidence === undefined) || scored && canonicalJson(scored.confidence) !== canonicalJson(parsed.confidence)) throw new Error("Pinned confidence evidence does not reproduce.");
+  const reproduced = scored?.calculation ?? evaluatePolicy(policy, parsed.request);
   if (reproduced.issues.some(issue => issue.code === "invalid_request") || canonicalJson(reproduced) !== canonicalJson(parsed.result)) throw new Error("Pinned calculation no longer reproduces under its exact policy.");
   return immutable(parsed as PinnedRun);
 }

@@ -1,17 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { MmsImportSummary } from "@/core/mms";
 import { MmsImporter } from "@/features/importer/mms-importer";
 import { FinancialSetupWizard } from "@/features/financial-setup/financial-setup-wizard";
 import { PolicyWorkspace } from "@/features/policies/policy-workspace";
-import { emptyMaster } from "@/core/financial/schema";
+import { emptyMaster, type FinancialMaster } from "@/core/financial/schema";
 import type { FinancialRelease } from "@/core/policy/releases";
+import { emptyArchive, mergeArchives, type PolicyArchive } from "@/core/policy/portability";
+import { ArchiveControls } from "@/features/policies/archive-controls";
 
 export function AnalysisWorkspace() {
   const [step, setStep] = useState<"import" | "setup" | "policies">("import");
   const [master, setMaster] = useState(emptyMaster);
-  const [history, setHistory] = useState<readonly FinancialRelease[]>([]);
+  const [archive, setArchive] = useState<PolicyArchive>(emptyArchive);
+  const currentArchive = useRef(archive);
+  const [setupSeed, setSetupSeed] = useState<FinancialMaster | undefined>(undefined);
+  const [setupGeneration, setSetupGeneration] = useState(0);
+  function commitArchive(next: PolicyArchive) {
+    const current = currentArchive.current;
+    if (current.releases.some((release, index) => next.releases[index]?.hash !== release.hash || next.releases[index]?.id !== release.id) || current.runs.some(run => !next.runs.some(nextRun => nextRun.id === run.id && nextRun.hash === run.hash))) throw new Error("The archive changed during this operation. Retry without replacing newer history.");
+    currentArchive.current = next; setArchive(next);
+  }
+  function setHistory(history: readonly FinancialRelease[]) { commitArchive({ ...currentArchive.current, releases: history }); }
+  async function mergeArchive(incoming: PolicyArchive) {
+    const previous = currentArchive.current; const merged = await mergeArchives(previous, incoming);
+    if (previous !== currentArchive.current) throw new Error("Archive changed while validating. Please retry the merge.");
+    commitArchive(merged);
+  }
+  function restoreMaster(value: FinancialMaster) { setSetupSeed(value); setMaster(value); setSetupGeneration(current => current + 1); }
   const [source, setSource] = useState<MmsImportSummary | null>(null);
   return <main className="mx-auto min-h-screen w-full max-w-[1280px] px-4 py-5 sm:px-8">
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line)] pb-5">
@@ -29,8 +46,8 @@ export function AnalysisWorkspace() {
       <MmsImporter onReady={setSource} onReset={() => setSource(null)} onContinue={() => setStep("setup")} />
       <p className="setup-help mt-4">Reported Qty is authoritative. Stroke × multiplier is a validation check, never a replacement.</p>
     </div>
-    <div hidden={step !== "setup"}><FinancialSetupWizard source={source} onMasterChange={setMaster} /></div>
-    <div hidden={step !== "policies"}><PolicyWorkspace master={master} history={history} onHistory={setHistory} /></div>
+    <div hidden={step !== "setup"}><FinancialSetupWizard key={setupGeneration} source={source} onMasterChange={setMaster} initialMaster={setupSeed} /></div>
+    <div hidden={step !== "policies"}><PolicyWorkspace master={master} history={archive.releases} onHistory={setHistory} portability={<ArchiveControls archive={archive} onMerge={mergeArchive} onRestoreMaster={restoreMaster} />} /></div>
     <footer className="mt-10 border-t border-[var(--line)] py-5 text-xs text-[var(--muted)]">Financial setup and policy governance · Historical profit dashboard is a later phase.</footer>
   </main>;
 }

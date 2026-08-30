@@ -54,6 +54,15 @@ No React component calculates revenue or profit. The setup review is not an appr
 - Formula policies require caller-provided governance and start provisional. No active dates, confidence scores, financial inputs or approvers are supplied by default.
 - This is a standalone core API, not dashboard integration or a full ledger. Future engines must resolve aliases/conversions, select source quantities and master versions, prove cost coverage, allocate shared costs and prevent cross-record double counting. See `docs/FORMULA_REFERENCE.md`.
 
+### Phase 4.3–4.5 implementation
+
+- `src/core/policy/releases.ts` owns immutable master/policy releases, canonical SHA-256 integrity, parent lineage, publication/approval transitions, date selection/coverage and replayable pinned runs. Governance release revisions are separate from executable formula versions.
+- `src/core/policy/confidence.ts` applies versioned rules and evidence-backed quality components to individual results. Missing required inputs/assessments never receive a high-confidence label by default.
+- `src/core/policy/portability.ts` verifies complete archives and merges only compatible history prefixes. `local-archive.ts` owns a separate consent/expiry-controlled storage key and rejects stale or conflicting saves.
+- `src/workers/policy-archive.worker.ts` parses and verifies bounded JSON imports off the UI thread. The UI previews before applying them.
+- `src/features/policies` provides a secondary policy/release workspace and backup/privacy controls. Financial Setup remains mounted; restoring an archived master is a separately confirmed action. Concurrent operations cannot silently drop newer history.
+- No durable server, authenticated approval or tamper-proof audit service is claimed. Future engines must bind actual normalized source/master inputs before financial publication; the current UI does not calculate or display factory-wide profit.
+
 - `src/app`: routes, layouts and route-specific presentation
 - `src/components`: reusable UI components
 - `src/features`: user workflows such as import and financial setup
