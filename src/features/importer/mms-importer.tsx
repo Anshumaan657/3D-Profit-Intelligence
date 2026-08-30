@@ -36,7 +36,7 @@ function displayDateRange(value: [string, string] | null): string {
   return value[0] === value[1] ? value[0] : `${value[0]} — ${value[1]}`;
 }
 
-export function MmsImporter() {
+export function MmsImporter({ onReady, onContinue, onReset }: { onReady?: (summary: MmsImportSummary) => void; onContinue?: () => void; onReset?: () => void }) {
   const [state, setState] = useState<ImportState>({ status: "idle" });
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +45,7 @@ export function MmsImporter() {
 
   useEffect(
     () => () => {
+      requestRef.current = null;
       workerRef.current?.terminate();
     },
     [],
@@ -58,6 +59,7 @@ export function MmsImporter() {
 
   function reset(): void {
     stopWorker();
+    onReset?.();
     if (inputRef.current) inputRef.current.value = "";
     setState({ status: "idle" });
   }
@@ -69,6 +71,9 @@ export function MmsImporter() {
 
   async function importFile(file: File): Promise<void> {
     stopWorker();
+    onReset?.();
+    const id = requestId();
+    requestRef.current = id;
     const extension = file.name.toLowerCase().split(".").pop();
     if (extension !== "xls" && extension !== "xlsx") {
       rejectFile(file.name, "Choose an unprotected .xls or .xlsx MMS workbook.");
@@ -91,8 +96,7 @@ export function MmsImporter() {
 
     try {
       const buffer = await file.arrayBuffer();
-      const id = requestId();
-      requestRef.current = id;
+      if (requestRef.current !== id) return;
       const worker = new Worker(
         new URL("../../workers/mms-import.worker.ts", import.meta.url),
         { type: "module" },
@@ -113,6 +117,7 @@ export function MmsImporter() {
             return;
           }
           if (response.type === "success") {
+            onReady?.(response.summary);
             setState({
               status: "success",
               fileName: file.name,
@@ -130,6 +135,7 @@ export function MmsImporter() {
         },
       );
       worker.addEventListener("error", () => {
+        if (requestRef.current !== id) return;
         rejectFile(
           file.name,
           "The local import worker stopped unexpectedly. The source workbook was not changed.",
@@ -148,6 +154,7 @@ export function MmsImporter() {
       };
       worker.postMessage(request, [buffer]);
     } catch (error) {
+      if (requestRef.current !== id) return;
       rejectFile(
         file.name,
         error instanceof Error
@@ -360,6 +367,7 @@ export function MmsImporter() {
           </dl>
 
           <div className="mt-5 flex flex-wrap gap-3 print:hidden">
+            {onContinue ? <button className="setup-button" onClick={onContinue} type="button">Continue to financial setup →</button> : null}
             <button
               className="rounded-xl bg-[var(--panel)] px-4 py-2.5 text-sm font-bold text-white"
               onClick={downloadReport}

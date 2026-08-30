@@ -6,7 +6,7 @@
 
 ## Current checkpoint
 
-Phase 2 adds the generalized, local-only MMS workbook importer. It validates `.xls` and `.xlsx` files, maps the required MMS sheets and columns, normalizes production and downtime evidence in a Web Worker, and produces a printable or downloadable compatibility report. Financial calculations remain deferred to their reviewed phase.
+Phase 3 adds a guided Financial Setup Wizard on top of the verified MMS importer. It collects product prices/material costs, machine and labour rates, overheads, quality/rework costs, scrap recovery, factory calendar rules, unit conversions and aliases. Effective-date and input checks are shared by the UI and Excel/JSON imports. Draft storage is local, optional and consent-based. Financial calculations remain deferred to their reviewed phase.
 
 ## Financial integrity rules
 
@@ -49,6 +49,8 @@ The importer does not upload or modify the selected workbook. It rejects unsuppo
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Excel input guide](docs/EXCEL_INPUT_GUIDE.md)
+- [Financial setup guide](docs/FINANCIAL_SETUP.md)
+- [Phase 3 verification and review](docs/PHASE_3_REVIEW.md)
 - [Development workflow](docs/DEVELOPMENT.md)
 - [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
 - [Decision status](docs/DECISION_STATUS.md)

@@ -239,6 +239,7 @@ export type CanonicalMmsImport = {
 };
 
 export type MmsImportSummary = {
+  catalog: { products: string[]; machines: string[] };
   source: CanonicalMmsImport["source"];
   compatibility: MmsWorkbookCompatibilityReport;
   stats: MmsImportStats;
