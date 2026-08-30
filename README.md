@@ -8,7 +8,7 @@
 
 Phase 3 adds a guided Financial Setup Wizard on top of the verified MMS importer. It collects product prices/material costs, machine and labour rates, overheads, quality/rework costs, scrap recovery, factory calendar rules, unit conversions and aliases. Effective-date and input checks are shared by the UI and Excel/JSON imports. Draft storage is local, optional and consent-based. Financial calculations remain deferred to their reviewed phase.
 
-Phase 3 is merged. Phase 4.1 adds a framework-independent policy schema and exact-version registry for review, without changing the dashboard. Phase 4 is split into five separately reviewed and merged subphases; see the plan below.
+Phases 3 and 4.1 are merged. Phase 4.2 adds 22 versioned formula definitions, exact arithmetic, guarded policy execution and worked-case tests for review. The dashboard remains unchanged; historical financial engines are not yet integrated. Phase 4 is split into five separately reviewed and merged subphases; see the plan below.
 
 ## Financial integrity rules
 
@@ -55,6 +55,8 @@ The importer does not upload or modify the selected workbook. It rejects unsuppo
 - [Phase 3 verification and review](docs/PHASE_3_REVIEW.md)
 - [Phase 4 subphase plan and GitHub workflow](docs/PHASE_4_PLAN.md)
 - [Phase 4.1 verification and review](docs/PHASE_4_1_REVIEW.md)
+- [Formula definitions and execution boundaries](docs/FORMULA_REFERENCE.md)
+- [Phase 4.2 verification and GitHub PR workflow](docs/PHASE_4_2_REVIEW.md)
 - [Development workflow](docs/DEVELOPMENT.md)
 - [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
 - [Decision status](docs/DECISION_STATUS.md)

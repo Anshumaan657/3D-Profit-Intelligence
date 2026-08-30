@@ -2,6 +2,8 @@
 
 Phase 4 has five separately reviewed subphases. Implement one, verify it, let the project owner review/commit/push and merge its pull request on GitHub, then wait for confirmation before starting the next. Do not push directly to `main`. This subdivision does not change the remaining major project phases.
 
+Current checkpoint: 4.1 merged at `cbf47ec`; 4.2 implemented for review on `feat/policy-formulas`. See `PHASE_4_2_REVIEW.md` for its verification and commit/PR instructions. The 4.1 commands below are retained as the historical workflow, not the current branch instructions.
+
 | Subphase | Scope | Acceptance checkpoint |
 | --- | --- | --- |
 | 4.1 — Policy foundation | Serializable policy contract, strict validation, exact-version read-only registry, domain tests | Every policy records the required metadata; malformed records and duplicate versions are rejected. No UI change. |
